@@ -1,0 +1,21 @@
+{
+    "name": "CustomRender.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:f8f7b5b73a21d8144b1f4f24ae7540c7",
+        "GUID:3eae0364be2026648bf74846acb8a731",
+        "GUID:2a69708d171a17043a9d0ad45f205cfe",
+        "GUID:c579267770062bf448e75eb160330b7f"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
