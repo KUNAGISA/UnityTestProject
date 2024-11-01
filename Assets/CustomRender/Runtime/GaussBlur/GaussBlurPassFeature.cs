@@ -7,10 +7,8 @@ namespace CustomRender.Runtime
 {
     internal class GaussBlurPassFeature : ScriptableRendererFeature
     {
-        class CustomRenderPass : ScriptableRenderPass
+        class GaussBlurPass : ScriptableRenderPass
         {
-            // This class stores the data needed by the RenderGraph pass.
-            // It is passed as a parameter to the delegate function that executes the RenderGraph pass.
             private class PassData
             {
                 public Material Material;
@@ -73,12 +71,12 @@ namespace CustomRender.Runtime
         [SerializeField]
         private Material m_material = null;
 
-        private CustomRenderPass m_scriptablePass;
+        private GaussBlurPass m_scriptablePass;
 
         /// <inheritdoc/>
         public override void Create()
         {
-            m_scriptablePass = new CustomRenderPass();
+            m_scriptablePass = new GaussBlurPass();
             m_scriptablePass.renderPassEvent = RenderPassEvent.AfterRenderingPostProcessing;
         }
 
