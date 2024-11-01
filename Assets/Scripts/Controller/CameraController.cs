@@ -42,7 +42,7 @@ public class CameraController : MonoBehaviour, IGameController, InputSystem_Acti
             transform.localRotation = Quaternion.Euler(m_currentEulers);
         }
 
-        var moveDirection = (transform.forward * m_inputDirection.y + transform.right * m_inputDirection.x + transform.up * m_moveVerical).normalized;
+        var moveDirection = (transform.forward * m_inputDirection.y + transform.right * m_inputDirection.x + Vector3.up * m_moveVerical).normalized;
         transform.position += m_moveSpeed * Time.deltaTime * moveDirection;
     }
 
