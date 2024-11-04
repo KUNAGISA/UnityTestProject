@@ -5,6 +5,7 @@ using UnityEngine.Rendering.Universal;
 namespace CustomRender.Runtime
 {
     [Serializable, VolumeComponentMenu("Custom/GaussBlur")]
+    [VolumeRequiresRendererFeatures(typeof(GaussBlurPassFeature))]
     [SupportedOnRenderPipeline(typeof(UniversalRenderPipelineAsset))]
     public class GaussBlur : VolumeComponent, IPostProcessComponent
     {

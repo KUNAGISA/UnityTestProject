@@ -16,28 +16,26 @@ namespace CustomRender.Runtime
                 public TextureHandle Destination;
             }
 
-            static readonly MaterialPropertyBlock s_PropertyBlock = new MaterialPropertyBlock();
-
             private static void ExecutePass(PassData data, UnsafeGraphContext context)
             {
                 var gaussBlur = VolumeManager.instance.stack.GetComponent<GaussBlur>();
-                s_PropertyBlock.SetInt("_KernalSize", gaussBlur.KernalSize.value);
-                s_PropertyBlock.SetFloat("_Spread", gaussBlur.Spread.value);
+                var propertyBlock = context.renderGraphPool.GetTempMaterialPropertyBlock();
+
+                propertyBlock.SetInt(ShaderPropertyId.KernalSize, gaussBlur.KernalSize.value);
+                propertyBlock.SetFloat(ShaderPropertyId.Spread, gaussBlur.Spread.value);
 
                 context.cmd.SetRenderTarget(data.Destination);
-                s_PropertyBlock.SetTexture("_MainTex", data.Source);
-                context.cmd.DrawProcedural(Matrix4x4.identity, data.Material, 0, MeshTopology.Triangles, 3, 1, s_PropertyBlock);
+                propertyBlock.SetTexture(ShaderPropertyId.MainTex, data.Source);
+                context.cmd.DrawProcedural(Matrix4x4.identity, data.Material, 0, MeshTopology.Triangles, 3, 1, propertyBlock);
 
                 context.cmd.SetRenderTarget(data.Source);
-                s_PropertyBlock.SetTexture("_MainTex", data.Destination);
-                context.cmd.DrawProcedural(Matrix4x4.identity, data.Material, 1, MeshTopology.Triangles, 3, 1, s_PropertyBlock);
-
-                s_PropertyBlock.Clear();
+                propertyBlock.SetTexture(ShaderPropertyId.MainTex, data.Destination);
+                context.cmd.DrawProcedural(Matrix4x4.identity, data.Material, 1, MeshTopology.Triangles, 3, 1, propertyBlock);
             }
 
-            private Material m_material = null;
+            private readonly Material m_material = null;
 
-            public void Setup(Material material)
+            public GaussBlurPass(Material material)
             {
                 m_material = material;
             }
@@ -45,6 +43,7 @@ namespace CustomRender.Runtime
             public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
             {
                 var resourceData = frameData.Get<UniversalResourceData>();
+                var gaussBlur = VolumeManager.instance.stack.GetComponent<GaussBlur>();
 
                 var targetDesc = renderGraph.GetTextureDesc(resourceData.activeColorTexture);
                 targetDesc.name = "GaussBlurPassFeature";
@@ -53,18 +52,17 @@ namespace CustomRender.Runtime
                 var source = resourceData.activeColorTexture;
                 var destination = renderGraph.CreateTexture(targetDesc);
 
-                using var builder = renderGraph.AddUnsafePass<PassData>("Gauss Blur Pass", out var passData);
-                {
-                    passData.Material = m_material;
-                    passData.Source = source;
-                    passData.Destination = destination;
+                using var builder = renderGraph.AddUnsafePass<PassData>("Gauss Blur Pass", out var passData, profilingSampler);
 
-                    builder.UseTexture(source, AccessFlags.ReadWrite);
-                    builder.UseTexture(destination, AccessFlags.ReadWrite);
+                passData.Material = m_material;
+                passData.Source = source;
+                passData.Destination = destination;
 
-                    builder.AllowPassCulling(false);
-                    builder.SetRenderFunc<PassData>(ExecutePass);
-                }
+                builder.UseTexture(source, AccessFlags.ReadWrite);
+                builder.UseTexture(destination, AccessFlags.ReadWrite);
+
+                builder.AllowPassCulling(false);
+                builder.SetRenderFunc<PassData>(ExecutePass);
             }
         }
 
@@ -73,21 +71,17 @@ namespace CustomRender.Runtime
 
         private GaussBlurPass m_scriptablePass;
 
-        /// <inheritdoc/>
         public override void Create()
         {
-            m_scriptablePass = new GaussBlurPass();
+            m_scriptablePass = new GaussBlurPass(m_material);
             m_scriptablePass.renderPassEvent = RenderPassEvent.AfterRenderingPostProcessing;
         }
 
-        // Here you can inject one or multiple render passes in the renderer.
-        // This method is called when setting up the renderer once per-camera.
         public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
         {
             var gaussBlur = VolumeManager.instance.stack.GetComponent<GaussBlur>();
             if (m_material && gaussBlur.IsActive())
             {
-                m_scriptablePass.Setup(m_material);
                 renderer.EnqueuePass(m_scriptablePass);
             }
         }

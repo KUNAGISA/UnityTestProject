@@ -62,13 +62,13 @@ Shader "Custom/GaussBlur"
             return output;
         }
 
-        float gaussian(int x)
+        float Gaussian(int x)
         {
             float sigmaSqu = _Spread * _Spread;
             return (1 / sqrt(TWO_PI * sigmaSqu)) * pow(E, -(x * x) / (2 * sigmaSqu));
         }
 
-        float4 gaussBlur(Varyings input, float2 dir)
+        float4 GaussBlur(Varyings input, float2 dir)
         {
             UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
 
@@ -79,7 +79,7 @@ Shader "Custom/GaussBlur"
 
             for(int x = -_KernalSize; x <= _KernalSize; ++x)
             {
-                float gauss = gaussian(x);
+                float gauss = Gaussian(x);
                 kernelSum += gauss;
                 color += gauss * SAMPLE_TEXTURE2D_X(_MainTex, sampler_MainTex, uv + x * texlSize);
             }
@@ -96,11 +96,11 @@ Shader "Custom/GaussBlur"
             HLSLPROGRAM
            
             #pragma vertex Vert
-            #pragma fragment frag_GaussBlurHorizontal
+            #pragma fragment FragGaussBlurHorizontal
 
-            float4 frag_GaussBlurHorizontal(Varyings input) : SV_Target0
+            float4 FragGaussBlurHorizontal(Varyings input) : SV_Target0
             {
-                return gaussBlur(input, float2(1, 0));
+                return GaussBlur(input, float2(1, 0));
             }
 
             ENDHLSL
@@ -113,11 +113,11 @@ Shader "Custom/GaussBlur"
             HLSLPROGRAM
            
             #pragma vertex Vert
-            #pragma fragment frag_GaussBlurVertical
+            #pragma fragment FragGaussBlurVertical
 
-            float4 frag_GaussBlurVertical(Varyings input) : SV_Target0
+            float4 FragGaussBlurVertical(Varyings input) : SV_Target0
             {
-                return gaussBlur(input, float2(0, 1));
+                return GaussBlur(input, float2(0, 1));
             }
 
             ENDHLSL
