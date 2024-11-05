@@ -79,4 +79,4 @@ MonoBehaviour:
   m_Name: GaussBlurPassFeature
   m_EditorClassIdentifier: 
   m_Active: 1
-  m_material: {fileID: 2100000, guid: 46ab2add7c946fb469d4166b6f6897d1, type: 2}
+  m_material: {fileID: 2100000, guid: b57727bc0eae6b147b983c1dbe30cdca, type: 2}
