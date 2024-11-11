@@ -148,7 +148,7 @@ MonoBehaviour:
   active: 1
   KernalSize:
     m_OverrideState: 1
-    m_Value: 10
+    m_Value: 1
   Spread:
     m_OverrideState: 1
     m_Value: 2.2
