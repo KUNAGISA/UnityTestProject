@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e5d17a21594effb4e9591490b009e7aa, type: 3}
-  m_Name: Default Local Group_BundledAssetGroupSchema
+  m_Name: Hotfix Scripts Group_BundledAssetGroupSchema
   m_EditorClassIdentifier: 
-  m_Group: {fileID: 11400000, guid: 1f0ea1bdaf6e3b1428c70557126e42fd, type: 2}
+  m_Group: {fileID: 11400000, guid: 2347f254afa7fd142870e71db01c93d4, type: 2}
   m_InternalBundleIdMode: 1
   m_Compression: 1
   m_IncludeAddressInCatalog: 1
-  m_IncludeGUIDInCatalog: 0
+  m_IncludeGUIDInCatalog: 1
   m_IncludeLabelsInCatalog: 1
   m_InternalIdNamingMode: 0
   m_CacheClearBehavior: 0
@@ -34,10 +34,10 @@ MonoBehaviour:
   m_RedirectLimit: -1
   m_RetryCount: 0
   m_BuildPath:
-    m_Id: 840c05ab9a59e2c41a41ecdf99081d77
+    m_Id: 12c805f895456ba4ebaf89d4f5bb1d0c
   m_LoadPath:
-    m_Id: 128a450f482f5ff42a7ac973ed25e859
-  m_BundleMode: 1
+    m_Id: 5f5cb4e74c38e4746bd0be9dc9cb7bc1
+  m_BundleMode: 0
   m_AssetBundleProviderType:
     m_AssemblyName: Unity.ResourceManager, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     m_ClassName: UnityEngine.ResourceManagement.ResourceProviders.AssetBundleProvider
