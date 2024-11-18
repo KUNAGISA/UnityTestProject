@@ -71,4 +71,3 @@ crashlytics-build.properties
 HybridCLRData
 Server/Data/*
 Assets/HybridCLRGenerate/HotUpdateDlls/*
-Assets/HybridCLRGenerate/PatchedAOTDlls/*
