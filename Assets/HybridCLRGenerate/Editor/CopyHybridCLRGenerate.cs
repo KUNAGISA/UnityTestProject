@@ -10,10 +10,15 @@ using UnityEngine;
 
 namespace HybridCLRGenerate.Editor
 {
-    internal static class CopyHotUpdateDlls
+    internal static class CopyHybridCLRGenerate
     {
         private const string CopyTargetPath = "Assets/HybridCLRGenerate/HotUpdateDlls";
         private const string HotfixDLLGroupName = "Hotfix Scripts Group";
+
+        private const string CopyTargetHotUpdateDllsPath = "Assets/HybridCLRGenerate/HotUpdateDlls";
+        private const string CopyTargetPatchedAOTDllsPath = "Assets/HybridCLRGenerate/PatchedAOTDlls";
+
+        private const string PatchedAOTLabelName = "aotassembly";
 
         [MenuItem("HybridCLR/Copy HotUpdateDlls", priority = 2000)]
         public static void CopyBuildTargetDlls()
@@ -25,6 +30,9 @@ namespace HybridCLRGenerate.Editor
                 Debug.LogError($"{EditorUserBuildSettings.activeBuildTarget} 还没有生成DLL");
                 return;
             }
+
+            CreateOrClearDirectory(CopyTargetHotUpdateDllsPath);
+            CreateOrClearDirectory(CopyTargetPatchedAOTDllsPath);
 
             var aa = AddressableAssetSettingsDefaultObject.Settings;
             var hotfixDllGroup = aa.FindGroup(HotfixDLLGroupName);
@@ -43,61 +51,61 @@ namespace HybridCLRGenerate.Editor
                 hotfixDllGroup.RemoveAssetEntries(hotfixDllGroup.entries.ToArray(), true);
             }
 
-            if (!Directory.Exists(CopyTargetPath))
+            AddToAddressable(aa, hotfixDllGroup, CopyTargetHotUpdateDllsPath);
+            AddToAddressable(aa, hotfixDllGroup, CopyTargetPatchedAOTDllsPath, PatchedAOTLabelName);
+
+            CopyFiles(AOTGenericReferences.PatchedAOTAssemblyList, aotAssemblyRootPath, CopyTargetPatchedAOTDllsPath);
+            CopyFiles(HybridCLRSettings.Instance.hotUpdateAssemblyDefinitions.Select(x => x.name + ".dll"), hotUpdateDllsRootPath, CopyTargetHotUpdateDllsPath);
+
+            AssetDatabase.Refresh();
+            EditorUtility.DisplayDialog("Copy HotUpdateDlls", "Copy HotUpdateDlls Complete.", "OK");
+        }
+
+        private static bool CreateOrClearDirectory(string directoryPath)
+        {
+            if (!Directory.Exists(directoryPath))
             {
-                AssetDatabase.CreateFolder(Path.GetDirectoryName(CopyTargetPath), Path.GetFileName(CopyTargetPath));
+                AssetDatabase.CreateFolder(Path.GetDirectoryName(directoryPath), Path.GetFileName(directoryPath));
                 AssetDatabase.Refresh();
             }
             else
             {
                 var outFailedPaths = new List<string>();
-                var deleteFilePaths = AssetDatabase.FindAssets("", new string[] { CopyTargetPath }).Select(x => AssetDatabase.GUIDToAssetPath(x)).ToArray();
+                var deleteFilePaths = AssetDatabase.FindAssets("", new string[] { directoryPath }).Select(x => AssetDatabase.GUIDToAssetPath(x)).ToArray();
                 if (!AssetDatabase.DeleteAssets(deleteFilePaths, outFailedPaths))
                 {
-                    Debug.LogError($"删除目录[{CopyTargetPath}]下的所有文件失败\n {string.Join('\n', outFailedPaths)}");
-                    return;
+                    Debug.LogError($"删除目录[{directoryPath}]下的所有文件失败\n {string.Join('\n', outFailedPaths)}");
+                    return false;
                 }
             }
+            return true;
+        }
 
-            foreach(var patchedAOTAssembly in AOTGenericReferences.PatchedAOTAssemblyList)
+        private static void AddToAddressable(AddressableAssetSettings aa, AddressableAssetGroup targetParent, string assetPath, string label = null)
+        {
+            var guid = AssetDatabase.AssetPathToGUID(assetPath);
+            var entry = aa.CreateOrMoveEntry(guid, targetParent, true);
+
+            if (!string.IsNullOrEmpty(label))
             {
-                var sourcePath = Path.Combine(aotAssemblyRootPath, patchedAOTAssembly);
+                entry.SetLabel(label, true, true);
+            }
+        }
+
+        private static void CopyFiles(IEnumerable<string> files, string sourceRootPath, string destinationRootPath)
+        {
+            foreach (var fileName in files)
+            {
+                var sourcePath = Path.Combine(sourceRootPath, fileName);
                 if (!File.Exists(sourcePath))
                 {
                     Debug.LogWarning($"找不到文件[{sourcePath}]");
                     continue;
                 }
 
-                var destinationPath = Path.Combine(CopyTargetPath, patchedAOTAssembly + ".bytes");
+                var destinationPath = Path.Combine(destinationRootPath, fileName + ".bytes");
                 File.Copy(sourcePath, destinationPath, true);
-                AssetDatabase.Refresh();
-
-                var guid = AssetDatabase.AssetPathToGUID(destinationPath);
-                var entry = aa.CreateOrMoveEntry(guid, hotfixDllGroup, true, true);
-                entry.SetAddress(patchedAOTAssembly + ".bytes");
-                entry.SetLabel("aotassembly", true, true);
             }
-
-            foreach(var hotUpdateAssembly in HybridCLRSettings.Instance.hotUpdateAssemblyDefinitions)
-            {
-                var sourcePath = Path.Combine(hotUpdateDllsRootPath, hotUpdateAssembly.name + ".dll");
-                if (!File.Exists(sourcePath))
-                {
-                    Debug.LogWarning($"找不到文件[{sourcePath}]");
-                    continue;
-                }
-
-                var destinationPath = Path.Combine(CopyTargetPath, hotUpdateAssembly.name + ".dll.bytes");
-                File.Copy(sourcePath, destinationPath, true);
-                AssetDatabase.Refresh();
-
-                var guid = AssetDatabase.AssetPathToGUID(destinationPath);
-                var entry = aa.CreateOrMoveEntry(guid, hotfixDllGroup, true, true);
-                entry.SetAddress(hotUpdateAssembly.name + ".dll.bytes");
-            }
-
-            AssetDatabase.Refresh();
-            EditorUtility.DisplayDialog("Copy HotUpdateDlls", "Copy HotUpdateDlls Complete.", "OK");
         }
     }
 }

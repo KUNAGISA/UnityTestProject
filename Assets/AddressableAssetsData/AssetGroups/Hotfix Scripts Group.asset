@@ -15,34 +15,16 @@ MonoBehaviour:
   m_GroupName: Hotfix Scripts Group
   m_GUID: a4e3aeedc3f1a6b4c86db10819321c61
   m_SerializeEntries:
-  - m_GUID: 1c7daafda8d807b418b9baef87339878
-    m_Address: UnityEngine.CoreModule.dll.bytes
+  - m_GUID: 4d3fdc663e2de6347957a9452013a84d
+    m_Address: Assets/HybridCLRGenerate/PatchedAOTDlls
     m_ReadOnly: 1
     m_SerializedLabels:
     - aotassembly
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 1f725f8694debc8478d232218816e14b
-    m_Address: GameFramework.dll.bytes
-    m_ReadOnly: 1
-    m_SerializedLabels:
-    - aotassembly
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: 53db2b70f3d8a8d41a41176b94cb7b7a
-    m_Address: Gameplay.dll.bytes
+  - m_GUID: 50b368964a31bb04584caf8b2bba1dfc
+    m_Address: Assets/HybridCLRGenerate/HotUpdateDlls
     m_ReadOnly: 1
     m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: b2ab4c4013e79474eb031feb6cc0cc92
-    m_Address: mscorlib.dll.bytes
-    m_ReadOnly: 1
-    m_SerializedLabels:
-    - aotassembly
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: fe22a71a486287d41bd9e274b0bc818f
-    m_Address: Unity.InputSystem.dll.bytes
-    m_ReadOnly: 1
-    m_SerializedLabels:
-    - aotassembly
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 1
   m_Settings: {fileID: 11400000, guid: 41ba768e74417e249a57417138a532d8, type: 2}

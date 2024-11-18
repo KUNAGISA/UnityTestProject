@@ -12,7 +12,7 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.SceneManagement;
-using Conditional = System.Diagnostics.ConditionalAttribute;
+using ConditionalAttribute = System.Diagnostics.ConditionalAttribute;
 
 internal class Lancher : MonoBehaviour
 {
@@ -93,13 +93,14 @@ internal class Lancher : MonoBehaviour
         //加载的Assembly需要按照引用顺序排序
         var assemblies = new string[]
         {
-            "Gameplay.dll.bytes"
+            "Gameplay",
         };
 
         Assembly assembly = null;
         for (var index = 0; index < assemblies.Length; index++)
         {
-            var handle = Addressables.LoadAssetAsync<TextAsset>(assemblies[index]);
+            var address = $"Assets/HybridCLRGenerate/PatchedAOTDlls/{assemblies[index]}.dll.bytes";
+            var handle = Addressables.LoadAssetAsync<TextAsset>(address);
             handle.WaitForCompletion();
 
             assembly = Assembly.Load(handle.Result.bytes);
