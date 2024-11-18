@@ -93,13 +93,13 @@ internal class Lancher : MonoBehaviour
         //加载的Assembly需要按照引用顺序排序
         var assemblies = new string[]
         {
-            "Gameplay",
+            "Gameplay.dll.bytes",
         };
 
         Assembly assembly = null;
         for (var index = 0; index < assemblies.Length; index++)
         {
-            var address = $"Assets/HybridCLRGenerate/PatchedAOTDlls/{assemblies[index]}.dll.bytes";
+            var address = assemblies[index];
             var handle = Addressables.LoadAssetAsync<TextAsset>(address);
             handle.WaitForCompletion();
 

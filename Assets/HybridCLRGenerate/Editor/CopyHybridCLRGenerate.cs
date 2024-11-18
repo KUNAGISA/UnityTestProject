@@ -12,12 +12,9 @@ namespace HybridCLRGenerate.Editor
 {
     internal static class CopyHybridCLRGenerate
     {
-        private const string CopyTargetPath = "Assets/HybridCLRGenerate/HotUpdateDlls";
         private const string HotfixDLLGroupName = "Hotfix Scripts Group";
 
         private const string CopyTargetHotUpdateDllsPath = "Assets/HybridCLRGenerate/HotUpdateDlls";
-        private const string CopyTargetPatchedAOTDllsPath = "Assets/HybridCLRGenerate/PatchedAOTDlls";
-
         private const string PatchedAOTLabelName = "aotassembly";
 
         [MenuItem("HybridCLR/Copy HotUpdateDlls", priority = 2000)]
@@ -32,32 +29,17 @@ namespace HybridCLRGenerate.Editor
             }
 
             CreateOrClearDirectory(CopyTargetHotUpdateDllsPath);
-            CreateOrClearDirectory(CopyTargetPatchedAOTDllsPath);
 
             var aa = AddressableAssetSettingsDefaultObject.Settings;
-            var hotfixDllGroup = aa.FindGroup(HotfixDLLGroupName);
-            if (hotfixDllGroup == null)
-            {
-                hotfixDllGroup = aa.CreateGroup(HotfixDLLGroupName, false, true, true, null, typeof(ContentUpdateGroupSchema), typeof(BundledAssetGroupSchema));
-                var schema = hotfixDllGroup.GetSchema<BundledAssetGroupSchema>();
-                schema.BuildPath.SetVariableByName(aa, AddressableAssetSettings.kRemoteBuildPath);
-                schema.LoadPath.SetVariableByName(aa, AddressableAssetSettings.kRemoteLoadPath);
-                schema.BundleMode = BundledAssetGroupSchema.BundlePackingMode.PackSeparately;
-                schema.IncludeGUIDInCatalog = false;
-                schema.BundleNaming = BundledAssetGroupSchema.BundleNamingStyle.AppendHash;
-            }
-            else
-            {
-                hotfixDllGroup.RemoveAssetEntries(hotfixDllGroup.entries.ToArray(), true);
-            }
+            var hotfixDllGroup = CreateOrClearAssetGroup(aa, HotfixDLLGroupName);
 
-            AddToAddressable(aa, hotfixDllGroup, CopyTargetHotUpdateDllsPath);
-            AddToAddressable(aa, hotfixDllGroup, CopyTargetPatchedAOTDllsPath, PatchedAOTLabelName);
-
-            CopyFiles(AOTGenericReferences.PatchedAOTAssemblyList, aotAssemblyRootPath, CopyTargetPatchedAOTDllsPath);
-            CopyFiles(HybridCLRSettings.Instance.hotUpdateAssemblyDefinitions.Select(x => x.name + ".dll"), hotUpdateDllsRootPath, CopyTargetHotUpdateDllsPath);
-
+            var patchedAOTAssetPaths = CopyFiles(AOTGenericReferences.PatchedAOTAssemblyList, aotAssemblyRootPath, CopyTargetHotUpdateDllsPath);
+            var hotUpdateDllsAssetPaths = CopyFiles(HybridCLRSettings.Instance.hotUpdateAssemblyDefinitions.Select(x => x.name + ".dll"), hotUpdateDllsRootPath, CopyTargetHotUpdateDllsPath);
             AssetDatabase.Refresh();
+
+            AddToAddressable(aa, hotfixDllGroup, patchedAOTAssetPaths, PatchedAOTLabelName);
+            AddToAddressable(aa, hotfixDllGroup, hotUpdateDllsAssetPaths);
+
             EditorUtility.DisplayDialog("Copy HotUpdateDlls", "Copy HotUpdateDlls Complete.", "OK");
         }
 
@@ -81,19 +63,29 @@ namespace HybridCLRGenerate.Editor
             return true;
         }
 
-        private static void AddToAddressable(AddressableAssetSettings aa, AddressableAssetGroup targetParent, string assetPath, string label = null)
+        private static AddressableAssetGroup CreateOrClearAssetGroup(AddressableAssetSettings aa, string groupName)
         {
-            var guid = AssetDatabase.AssetPathToGUID(assetPath);
-            var entry = aa.CreateOrMoveEntry(guid, targetParent, true);
-
-            if (!string.IsNullOrEmpty(label))
+            var hotfixDllGroup = aa.FindGroup(groupName);
+            if (hotfixDllGroup == null)
             {
-                entry.SetLabel(label, true, true);
+                hotfixDllGroup = aa.CreateGroup(groupName, false, true, true, null, typeof(ContentUpdateGroupSchema), typeof(BundledAssetGroupSchema));
+                var schema = hotfixDllGroup.GetSchema<BundledAssetGroupSchema>();
+                schema.BuildPath.SetVariableByName(aa, AddressableAssetSettings.kRemoteBuildPath);
+                schema.LoadPath.SetVariableByName(aa, AddressableAssetSettings.kRemoteLoadPath);
+                schema.BundleMode = BundledAssetGroupSchema.BundlePackingMode.PackSeparately;
+                schema.IncludeGUIDInCatalog = false;
+                schema.BundleNaming = BundledAssetGroupSchema.BundleNamingStyle.AppendHash;
             }
+            else
+            {
+                hotfixDllGroup.RemoveAssetEntries(hotfixDllGroup.entries.ToArray(), true);
+            }
+            return hotfixDllGroup;
         }
 
-        private static void CopyFiles(IEnumerable<string> files, string sourceRootPath, string destinationRootPath)
+        private static string[] CopyFiles(IEnumerable<string> files, string sourceRootPath, string destinationRootPath, string label = null)
         {
+            var copyTargetPaths = new List<string>();
             foreach (var fileName in files)
             {
                 var sourcePath = Path.Combine(sourceRootPath, fileName);
@@ -105,6 +97,23 @@ namespace HybridCLRGenerate.Editor
 
                 var destinationPath = Path.Combine(destinationRootPath, fileName + ".bytes");
                 File.Copy(sourcePath, destinationPath, true);
+                copyTargetPaths.Add(destinationPath);
+            }
+            return copyTargetPaths.ToArray();
+        }
+
+        private static void AddToAddressable(AddressableAssetSettings aa, AddressableAssetGroup targetParent, string[] assetPaths, string label = null)
+        {
+            for (var index = 0; index < assetPaths.Length; index++)
+            {
+                var guid = AssetDatabase.AssetPathToGUID(assetPaths[index]);
+                var entry = aa.CreateOrMoveEntry(guid, targetParent, true);
+                entry.SetAddress(Path.GetFileName(assetPaths[index]));
+
+                if (!string.IsNullOrEmpty(label))
+                {
+                    entry.SetLabel(label, true, true);
+                }
             }
         }
     }
