@@ -145,10 +145,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c2590ad61f8eb945a1904647a37541d, type: 3}
   m_Name: GaussBlur
   m_EditorClassIdentifier: 
-  active: 1
+  active: 0
   KernalSize:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0
   Spread:
     m_OverrideState: 1
     m_Value: 2.2
